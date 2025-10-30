@@ -1,0 +1,252 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enums ---
+enum RoleType {
+  ADMIN
+  USER
+  OWNER
+  MEMBER
+}
+
+enum GroupType {
+  FREE
+  PAID
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+}
+
+enum TransactionType {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// --- Models ---
+model Role {
+  id String @id @default(uuid()) @db.Uuid
+
+  role RoleType @unique
+
+  users       User[]
+  room_member RoomMember[]
+
+  @@map("roles")
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+
+  name     String
+  email    String  @unique
+  password String
+  photo    String?
+
+  role_id String @db.Uuid
+  role    Role   @relation(fields: [role_id], references: [id], onDelete: Restrict)
+
+  rooms         Room[]        @relation("UserCreateRelation")
+  room_members  RoomMember[]
+  room_messages RoomMessage[]
+
+  password_resets PasswordReset[]
+
+  owner_transactions  Transaction[] @relation("TransactionOwnerRelation")
+  member_transactions Transaction[] @relation("TransactionMemberRelation")
+
+  payouts Payout[]
+
+  created_at DateTime @default(now())
+  
+  @@index([role_id])
+  @@map("users")
+}
+
+model Group {
+  id String @id @default(uuid()) @db.Uuid
+
+  name    String
+  photo   String?
+  type    GroupType
+  about   String    @db.Text
+  benefit String[]
+
+  price Int
+
+  room_id String? @unique @db.Uuid
+  room    Room?   @relation(fields: [room_id], references: [id], onDelete: SetNull)
+
+  created_at DateTime @default(now())
+
+  assets GroupAsset[]
+
+  transactions Transaction[]
+
+  @@index([type])
+  @@index([room_id])
+  @@index([created_at])
+  @@map("groups")
+}
+
+model GroupAsset {
+  id String @id @default(uuid()) @db.Uuid
+
+  group_id String @db.Uuid
+  group    Group  @relation(fields: [group_id], references: [id], onDelete: Cascade)
+
+  filename String
+
+  @@index([group_id])
+  @@map("group_assets")
+}
+
+model Room {
+  id String @id @default(uuid()) @db.Uuid
+
+  name     String
+  is_group Boolean @default(false)
+
+  created_by      String @db.Uuid
+  created_by_user User   @relation("UserCreateRelation", fields: [created_by], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+
+  members  RoomMember[]
+  messages RoomMessage[]
+
+  group Group?
+
+  @@index([created_by])
+  @@index([is_group])
+  @@index([created_at])
+  @@map("rooms")
+}
+
+model RoomMember {
+  id String @id @default(uuid()) @db.Uuid
+
+  room_id String @db.Uuid
+  room    Room   @relation(fields: [room_id], references: [id], onDelete: Cascade)
+
+  user_id String @db.Uuid
+  users   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  role_id String @db.Uuid
+  role    Role   @relation(fields: [role_id], references: [id], onDelete: Restrict)
+
+  joined_at DateTime @default(now())
+
+  @@unique([room_id, user_id])
+  @@index([user_id])
+  @@index([room_id])
+  @@index([role_id])
+  @@map("room_members")
+}
+
+model RoomMessage {
+  id String @id @default(uuid()) @db.Uuid
+
+  room_id String @db.Uuid
+  room    Room   @relation(fields: [room_id], references: [id], onDelete: Cascade)
+
+  sender_id String @db.Uuid
+  user      User   @relation(fields: [sender_id], references: [id], onDelete: Cascade)
+
+  content String @db.Text
+
+  type MessageType @default(TEXT)
+
+  created_at DateTime @default(now())
+
+  @@index([room_id])
+  @@index([sender_id])
+  @@index([created_at])
+  @@index([room_id, created_at])
+  @@map("room_messages")
+}
+
+model PasswordReset {
+  id String @id @default(uuid()) @db.Uuid
+
+  user_id String @db.Uuid
+  users   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  token      String   @unique
+  expires_at DateTime
+
+  created_at DateTime @default(now())
+
+  @@index([user_id])
+  @@index([token])
+  @@index([expires_at])
+  @@map("user_password_resets")
+}
+
+model Transaction {
+  id String @id @default(uuid()) @db.Uuid
+
+  owner_id String @db.Uuid
+  owner    User   @relation("TransactionOwnerRelation", fields: [owner_id], references: [id])
+
+  user_id String @db.Uuid
+  users   User   @relation("TransactionMemberRelation", fields: [user_id], references: [id], onDelete: Restrict)
+
+  group_id String @db.Uuid
+  group    Group  @relation(fields: [group_id], references: [id], onDelete: Restrict)
+
+  price Int
+
+  type TransactionType @default(PENDING)
+
+  created_at DateTime @default(now())
+
+  @@index([owner_id])
+  @@index([user_id])
+  @@index([group_id])
+  @@index([type])
+  @@index([created_at])
+  @@index([owner_id, type])
+  @@index([user_id, type])
+  @@map("transactions")
+}
+
+model Payout {
+  id String @id @default(uuid()) @db.Uuid
+
+  user_id String @db.Uuid
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Restrict)
+
+  amount Int
+
+  bank_name           String
+  bank_account_number String
+  bank_account_name   String
+
+  status TransactionType @default(PENDING)
+
+  proof String? @db.Text
+
+  created_at DateTime @default(now())
+
+  @@index([user_id])
+  @@index([status])
+  @@index([created_at])
+  @@index([user_id, status])
+  @@map("payouts")
+}

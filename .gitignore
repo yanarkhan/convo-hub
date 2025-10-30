@@ -20,4 +20,10 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Prisma
+*.db
+*.db-journal
+be/prisma/*.db
+be/src/generated/prisma
+
 

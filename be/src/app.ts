@@ -5,8 +5,8 @@ const app: Express = express();
 app.use(
   cors({
     origin:
-      process.env["NODE_ENV"] === "production"
-        ? process.env["FRONTEND_URL"]
+      process.env.NODE_ENV === "production"
+        ? process.env.FRONTEND_URL
         : "http://localhost:5173",
     credentials: true,
   })
@@ -30,10 +30,10 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({
     success: false,
     message:
-      process.env["NODE_ENV"] === "production"
+      process.env.NODE_ENV === "production"
         ? "An error occurred on the server"
         : err.message,
-    ...(process.env["NODE_ENV"] === "development" && { stack: err.stack }),
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 });
 
