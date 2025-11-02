@@ -26,4 +26,8 @@ Thumbs.db
 be/prisma/*.db
 be/src/generated/prisma
 
+# User Uploads
+be/public/assets/uploads/photos/*
+!be/public/assets/uploads/photos/.gitkeep
+
 

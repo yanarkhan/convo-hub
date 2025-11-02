@@ -1,9 +1,9 @@
-import app from "./app";
 import dotenv from "dotenv";
-
 dotenv.config();
 
-const PORT = Number(process.env.PORT ?? 3000);
+import app from "./app";
+
+const PORT = Number(process.env.PORT ?? 5000);
 const startServer = () => {
   try {
     app.listen(PORT, () => {
@@ -13,6 +13,5 @@ const startServer = () => {
     console.error("[SERVER] Failed to start server:", error);
   }
 };
-("");
 
 startServer();
