@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { signUpSchema } from "../utils/schema/user";
+import { signInSchema, signUpSchema } from "../utils/schema/user";
 import fs from "node:fs";
 import * as userService from "../services/userService";
 
@@ -48,6 +48,37 @@ export const signUp = async (
       fs.unlinkSync(req.file.path);
     }
 
+    next(error);
+  }
+};
+
+export const signIn = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const parse = signInSchema.safeParse(req.body);
+    if (!parse.success) {
+      const errorMessages = parse.error.issues.map(
+        (err) => `${err.path} - ${err.message}`
+      );
+
+      res.status(400).json({
+        success: false,
+        message: "Validation Error",
+        errors: errorMessages,
+      });
+      return;
+    }
+
+    const data = await userService.signIn(parse.data);
+    res.json({
+      success: true,
+      message: "Sign in success",
+      data,
+    });
+  } catch (error) {
     next(error);
   }
 };

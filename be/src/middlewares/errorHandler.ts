@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { Prisma } from "../generated/prisma/client";
 import {
   EmailAlreadyExistsError,
+  InvalidCredentialsError,
   InvalidFileError,
 } from "../services/userService";
 
@@ -40,6 +41,11 @@ export default function errorHandler(
       success: false,
       message: error.message,
     });
+    return;
+  }
+
+  if (error instanceof InvalidCredentialsError) {
+    res.status(401).json({ success: false, message: error.message });
     return;
   }
 

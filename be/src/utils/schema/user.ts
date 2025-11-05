@@ -17,3 +17,7 @@ export const signUpSchema = z.object({
     ),
 });
 
+export const signInSchema = signUpSchema.pick({
+  email: true,
+  password: true,
+});
