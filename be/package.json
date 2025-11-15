@@ -23,7 +23,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mailtrap": "^4.3.0",
+    "mailtrap": "^3.4.0",
     "multer": "^2.0.2",
     "prisma": "^6.18.0",
     "pusher": "^5.2.0",

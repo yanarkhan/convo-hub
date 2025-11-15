@@ -1,8 +1,15 @@
 import { z } from "zod";
-import { signInSchema, signUpSchema } from "../utils/schema/user";
+import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  signInSchema,
+  signUpSchema,
+} from "../utils/schema/user";
 
 export type SignUpValues = z.infer<typeof signUpSchema>;
 export type SignInValues = z.infer<typeof signInSchema>;
+export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
 export interface SignUpResponse {
   user: {
@@ -21,6 +28,7 @@ export interface SignInResponse {
     name: string;
     email: string;
     photo_url: string | null;
+    role: string;
   };
   token: string;
 }

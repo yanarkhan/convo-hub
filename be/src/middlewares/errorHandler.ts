@@ -4,6 +4,8 @@ import {
   EmailAlreadyExistsError,
   InvalidCredentialsError,
   InvalidFileError,
+  InvalidTokenError,
+  MailServiceError,
 } from "../services/userService";
 
 interface ErrorResponse {
@@ -46,6 +48,22 @@ export default function errorHandler(
 
   if (error instanceof InvalidCredentialsError) {
     res.status(401).json({ success: false, message: error.message });
+    return;
+  }
+
+  if (error instanceof MailServiceError) {
+    res.status(503).json({
+      success: false,
+      message: error.message,
+    });
+    return;
+  }
+
+  if (error instanceof InvalidTokenError) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
     return;
   }
 

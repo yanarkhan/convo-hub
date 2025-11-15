@@ -12,4 +12,13 @@ userRoutes.post(
 
 userRoutes.post("/auth/sign-in", userController.signIn);
 
+userRoutes.post("/auth/forgot-password", userController.requestPasswordReset);
+
+userRoutes.post(
+  "/admin/cleanup-expired-tokens",
+  userController.cleanupExpiredTokens
+);
+
+userRoutes.put("/auth/reset-password/:tokenId", userController.resetPassword);
+
 export default userRoutes;

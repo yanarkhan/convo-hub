@@ -21,3 +21,17 @@ export const signInSchema = signUpSchema.pick({
   email: true,
   password: true,
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email format").toLowerCase().trim(),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password: signUpSchema.shape.password,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password do not match",
+    path: ["confirmPassword"],
+  });
